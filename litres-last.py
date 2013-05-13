@@ -13,7 +13,7 @@ import urllib2
 from xml.dom.minidom import parseString
 
 
-CONFIG = os.path.join(os.path.dirname(__file__), 'litres.ini')
+CONFIG = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'litres.ini')
 
 API_URL = 'http://robot.litres.ru/pages/'
 AUTHORIZE_URL = API_URL + 'catalit_authorise/'

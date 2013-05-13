@@ -1,3 +1,5 @@
+.DS_Store
+litres.ini
 *.py[cod]
 
 # C extensions
