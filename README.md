@@ -7,3 +7,5 @@ Assorted collection of misc useful scripts.
 [LitRes](http://www.litres.ru/) user basket.  Initially it will ask for
 a user credentials, but they won't be saved;  special hash will be used
 instead.
+
+`.vimrc` is my ultimate Vim configuration file.
