@@ -33,7 +33,7 @@ set tabstop=4
 set textwidth=79
 set undofile
 set undodir=~/.tmp/
-set wildignore=*.o,*~,*.pyc,lib/
+set wildignore=*.o,*~,*.pyc,lib/*
 set wildmenu " Turn on the WiLd menu
 set whichwrap+=<,>,h,l
 set wrap
@@ -102,6 +102,8 @@ nnoremap <leader>n :NERDTreeToggle<cr>
 
 nnoremap <leader>l :TlistToggle<CR>
 nnoremap <leader>o :TlistOpen<CR>
+
+nnoremap <leader>c :cn<CR>zO
 
 fun! DetectTemplate()
   let n = 1
