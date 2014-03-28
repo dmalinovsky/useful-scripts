@@ -3,6 +3,7 @@ filetype off                  " required!
 
 set autowrite
 set backspace=eol,start,indent " Configure backspace so it acts as it should act
+set background=light
 set colorcolumn=80
 set cursorline
 set diffopt+=iwhite
@@ -33,7 +34,8 @@ set tabstop=4
 set textwidth=79
 set undofile
 set undodir=~/.tmp/
-set wildignore=*.o,*~,*.pyc,lib/*
+set visualbell
+set wildignore=*.o,*~,*.pyc,lib/*,bin/*,node_modules/*
 set wildmenu " Turn on the WiLd menu
 set whichwrap+=<,>,h,l
 set wrap
@@ -45,8 +47,7 @@ let g:syntastic_warning_symbol='⚠'
 let g:syntastic_always_populate_loc_list=1
 let g:syntastic_auto_jump=0
 
-let g:Tlist_Close_On_Select=1
-let g:Tlist_Exit_OnlyWindow=1
+let g:ctrlp_extensions = ['tag', 'buffertag']
 
 set rtp+=~/.vim/bundle/vundle/
 call vundle#rc()
@@ -59,9 +60,11 @@ Bundle 'bling/vim-airline'
 Bundle 'scrooloose/nerdtree'
 Bundle 'scrooloose/syntastic'
 Bundle 'tpope/vim-fugitive'
-Bundle 'vim-scripts/taglist.vim'
+Bundle 'rizzatti/funcoo.vim'
+Bundle 'rizzatti/dash.vim'
+Bundle 'kien/ctrlp.vim'
 " non-GitHub repos
-Bundle 'git://git.wincent.com/command-t.git'
+"Bundle 'git://git.wincent.com/command-t.git'
 
 filetype plugin indent on     " required!
 
@@ -86,6 +89,8 @@ func! DeleteTrailingWS()
 endfunc
 autocmd BufWrite *.py :call DeleteTrailingWS()
 autocmd BufWrite *.coffee :call DeleteTrailingWS()
+autocmd BufWrite *.js :call DeleteTrailingWS()
+autocmd BufWrite *.html :call DeleteTrailingWS()
 
 " Keep search matches in the middle of the window.
 nnoremap * *zzzv
@@ -100,10 +105,14 @@ map <left> :bp<cr>
 nnoremap <leader>k :NERDTreeFind<cr>
 nnoremap <leader>n :NERDTreeToggle<cr>
 
-nnoremap <leader>l :TlistToggle<CR>
-nnoremap <leader>o :TlistOpen<CR>
+nnoremap <leader>t :CtrlPTag<CR>
+nnoremap <leader>a :CtrlPBufTagAll<CR>
 
 nnoremap <leader>c :cn<CR>zO
+
+nnoremap <leader>b :CtrlPBuffer<CR>
+
+nmap <silent> <leader>d <Plug>DashSearch
 
 fun! DetectTemplate()
   let n = 1
