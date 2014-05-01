@@ -35,7 +35,7 @@ set textwidth=79
 set undofile
 set undodir=~/.tmp/
 set visualbell
-set wildignore=*.o,*~,*.pyc,lib/*,bin/*,node_modules/*
+set wildignore=*.o,*~,*.pyc,lib/*,bin/*,node_modules/*,src/*
 set wildmenu " Turn on the WiLd menu
 set whichwrap+=<,>,h,l
 set wrap
@@ -123,10 +123,11 @@ fun! DetectTemplate()
     endif
     let n = n + 1
   endwhile
-  set ft=html "default html
+  "set ft=html "default html
 endfun
 
 autocmd BufNewFile,BufRead *.html call DetectTemplate()
+autocmd BufNewFile,BufRead *.xml call DetectTemplate()
 
 """"""""""""""""""""""""""""""
 " => Visual mode related
@@ -166,3 +167,7 @@ function! VisualSearch(direction) range
     let @/ = l:pattern
     let @" = l:saved_reg
 endfunction
+
+autocmd BufEnter * :syntax sync fromstart
+noremap <F12> <Esc>:syntax sync fromstart<CR>
+inoremap <F12> <C-o>:syntax sync fromstart<CR>
