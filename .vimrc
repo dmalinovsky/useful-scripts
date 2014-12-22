@@ -8,6 +8,7 @@ set colorcolumn=80
 set cursorline
 set diffopt+=iwhite
 set expandtab
+set fileencodings=ucs-bom,utf-8,default,koi8-r
 set foldcolumn=1
 set foldlevel=2
 set foldmethod=indent
@@ -35,7 +36,7 @@ set textwidth=79
 set undofile
 set undodir=~/.tmp/
 set visualbell
-set wildignore=*.o,*~,*.pyc,lib/*,bin/*,node_modules/*,src/*
+set wildignore=*.o,*~,*.pyc,lib/**,bin/**,node_modules/**,src/**,ve/**,uploaded_media/**,web-assets/**
 set wildmenu " Turn on the WiLd menu
 set whichwrap+=<,>,h,l
 set wrap
@@ -168,6 +169,42 @@ function! VisualSearch(direction) range
     let @" = l:saved_reg
 endfunction
 
-autocmd BufEnter * :syntax sync fromstart
-noremap <F12> <Esc>:syntax sync fromstart<CR>
-inoremap <F12> <C-o>:syntax sync fromstart<CR>
+noremap <F5> <Esc>:syntax sync fromstart<CR>
+inoremap <F5> <C-o>:syntax sync fromstart<CR>
+
+" Indent Python in the Google way.
+
+setlocal indentexpr=GetGooglePythonIndent(v:lnum)
+
+let s:maxoff = 50 " maximum number of lines to look backwards.
+
+function GetGooglePythonIndent(lnum)
+
+  " Indent inside parens.
+  " Align with the open paren unless it is at the end of the line.
+  " E.g.
+  "   open_paren_not_at_EOL(100,
+  "                         (200,
+  "                          300),
+  "                         400)
+  "   open_paren_at_EOL(
+  "       100, 200, 300, 400)
+  call cursor(a:lnum, 1)
+  let [par_line, par_col] = searchpairpos('(\|{\|\[', '', ')\|}\|\]', 'bW',
+        \ "line('.') < " . (a:lnum - s:maxoff) . " ? dummy :"
+        \ . " synIDattr(synID(line('.'), col('.'), 1), 'name')"
+        \ . " =~ '\\(Comment\\|String\\)$'")
+  if par_line > 0
+    call cursor(par_line, 1)
+    if par_col != col("$") - 1
+      return par_col
+    endif
+  endif
+
+  " Delegate the rest to the original function.
+  return GetPythonIndent(a:lnum)
+
+endfunction
+
+let pyindent_nested_paren="&sw*2"
+let pyindent_open_paren="&sw*2"
