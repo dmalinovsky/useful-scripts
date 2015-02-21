@@ -24,6 +24,7 @@ set linebreak
 set magic
 set mouse=a
 set relativenumber
+set number
 set shiftwidth=4
 set showmatch
 set smarttab
