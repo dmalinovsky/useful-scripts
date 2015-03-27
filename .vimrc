@@ -12,7 +12,7 @@ set fileencodings=ucs-bom,utf-8,default,koi8-r
 set foldcolumn=1
 set foldlevel=2
 set foldmethod=indent
-set grepprg=ack
+set grepprg=ag
 set guifont=Menlo\ Regular:h14
 set history=700 " Sets how many lines of history VIM has to remember
 set hlsearch
