@@ -6,7 +6,7 @@ set backspace=eol,start,indent " Configure backspace so it acts as it should act
 set background=light
 set colorcolumn=80
 set cursorline
-set diffopt+=iwhite
+"set diffopt+=iwhite
 set expandtab
 set fileencodings=ucs-bom,utf-8,default,koi8-r
 set foldcolumn=1
@@ -66,6 +66,7 @@ Bundle 'tpope/vim-fugitive'
 Bundle 'rizzatti/funcoo.vim'
 Bundle 'rizzatti/dash.vim'
 Bundle 'kien/ctrlp.vim'
+Bundle 'jeetsukumaran/vim-buffersaurus'
 " non-GitHub repos
 "Bundle 'git://git.wincent.com/command-t.git'
 
