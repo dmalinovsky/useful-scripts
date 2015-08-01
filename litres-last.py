@@ -65,10 +65,10 @@ class LitresAPI(object):
 
     def download_trial(self, book):
         book_id = '%08d' % int(book.getAttribute('hub_id'))
-        url = '%s%s/%s/%s/%s.fb2.zip' % (DOWNLOAD_TRIAL_URL, book_id[0:2],
+        url = '%s%s/%s/%s/%s.epub' % (DOWNLOAD_TRIAL_URL, book_id[0:2],
                 book_id[2:4], book_id[4:6], book_id)
         subprocess.Popen(['wget', '-P', DOWNLOAD_DIR, url])
-        print 'Downloaded "%s"' % \
+        print 'Downloading "%s"' % \
             book.getElementsByTagName(BOOK_TITLE_TAG)[0].childNodes[0].data
 
     def _read_xml(self, url, data, desired_tag):
