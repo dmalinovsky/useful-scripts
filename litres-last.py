@@ -15,7 +15,7 @@ from xml.dom.minidom import parseString
 
 CONFIG = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'litres.ini')
 
-API_URL = 'http://www.litres.ru/pages/'
+API_URL = 'http://robot.litres.ru/pages/'
 AUTHORIZE_URL = API_URL + 'catalit_authorise/'
 CATALOG_URL = API_URL + 'catalit_browser/'
 DOWNLOAD_TRIAL_URL = 'http://robot.litres.ru/static/trials/'
