@@ -163,7 +163,7 @@ function! VisualSearch(direction) range
     if a:direction == 'b'
         execute "normal ?" . l:pattern . "^M"
     elseif a:direction == 'gv'
-        call CmdLine("grep " . l:pattern)
+        execute "grep " . l:pattern
     elseif a:direction == 'f'
         execute "normal /" . l:pattern . "^M"
     endif
