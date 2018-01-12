@@ -103,7 +103,7 @@ class LitresAPI(object):
             title = self.get_book_title(book)
             author = self.get_book_author(book)
             html += """
-                <p>%s. «%s» <a href="%s.fb2">FB2</a> | <a href="%s.epub">ePub</a></p>
+                <p>%s. «%s» <a href="%s.fb2.zip">FB2</a> | <a href="%s.epub">ePub</a></p>
             """ % (author, title, url, url)
 
         html += '</body></html>'
