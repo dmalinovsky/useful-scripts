@@ -4,11 +4,11 @@ filetype off                  " required!
 set autowrite
 set backspace=eol,start,indent " Configure backspace so it acts as it should act
 set background=light
-set colorcolumn=80
+set colorcolumn=100
 set cursorline
 "set diffopt+=iwhite
 set expandtab
-set fileencodings=ucs-bom,utf-8,default,koi8-r
+set fileencodings=ucs-bom,utf-8,default,cp1251
 set foldcolumn=1
 set foldlevel=2
 set foldmethod=indent
@@ -33,11 +33,11 @@ set scrolloff=7 " Set 7 lines to the cursor - when moving vertically using j/k
 set showbreak=↪
 set synmaxcol=600
 set tabstop=4
-set textwidth=79
+set textwidth=99
 set undofile
 set undodir=~/.tmp/
 set visualbell
-set wildignore=*.o,*~,*.pyc,lib/**,bin/**,node_modules/**,src/**,ve/**,uploaded_media/**,web-assets/**
+set wildignore=*.o,*~,*.pyc,*/lib/*,*/bin/*,*/node_modules/*,*/src/*,*/ve/*,*/uploaded_media/*,*/web-assets/*,*/migrations/*,*/elm-stuff/*
 set wildmenu " Turn on the WiLd menu
 set whichwrap+=<,>,h,l
 set wrap
@@ -51,6 +51,7 @@ let g:syntastic_auto_jump=0
 let g:syntastic_mode_map = { 'passive_filetypes': ['html'] }
 
 let g:ctrlp_extensions = ['tag', 'buffertag']
+let g:ctrlp_max_files = 0
 
 set rtp+=~/.vim/bundle/vundle/
 call vundle#rc()
@@ -65,8 +66,11 @@ Bundle 'scrooloose/syntastic'
 Bundle 'tpope/vim-fugitive'
 Bundle 'rizzatti/funcoo.vim'
 Bundle 'rizzatti/dash.vim'
-Bundle 'kien/ctrlp.vim'
+Bundle 'ctrlpvim/ctrlp.vim'
 Bundle 'jeetsukumaran/vim-buffersaurus'
+Bundle 'ElmCast/elm-vim'
+Bundle 'ambv/black'
+
 " non-GitHub repos
 "Bundle 'git://git.wincent.com/command-t.git'
 
@@ -92,9 +96,10 @@ func! DeleteTrailingWS()
   exe "normal `z"
 endfunc
 autocmd BufWrite *.py :call DeleteTrailingWS()
+" autocmd BufWritePre *.py execute ':Black'
 autocmd BufWrite *.coffee :call DeleteTrailingWS()
 autocmd BufWrite *.js :call DeleteTrailingWS()
-autocmd BufWrite *.html :call DeleteTrailingWS()
+"autocmd BufWrite *.html :call DeleteTrailingWS()
 
 " Keep search matches in the middle of the window.
 nnoremap * *zzzv
@@ -132,19 +137,7 @@ endfun
 
 autocmd BufNewFile,BufRead *.html call DetectTemplate()
 autocmd BufNewFile,BufRead *.xml call DetectTemplate()
-
-""""""""""""""""""""""""""""""
-" => Visual mode related
-""""""""""""""""""""""""""""""
-" Really useful!
-"  In visual mode when you press * or # to search for the current selection
-vnoremap <silent> * :call VisualSearch('f')<CR>
-vnoremap <silent> # :call VisualSearch('b')<CR>
-
-" When you press gv you vimgrep after the selected text
-vnoremap <silent> gv :call VisualSearch('gv')<CR>
-"map <leader>g :vimgrep // **/*<left><left><left><left><left><left><left>
-
+autocmd BufNewFile,BufRead *.fb2 set syntax=html
 
 function! CmdLine(str)
     exe "menu Foo.Bar :" . a:str
@@ -171,6 +164,20 @@ function! VisualSearch(direction) range
     let @/ = l:pattern
     let @" = l:saved_reg
 endfunction
+
+""""""""""""""""""""""""""""""
+" => Visual mode related
+""""""""""""""""""""""""""""""
+" Really useful!
+"  In visual mode when you press * or # to search for the current selection
+vnoremap <silent> * :call VisualSearch('f')<CR>
+vnoremap <silent> # :call VisualSearch('b')<CR>
+
+" When you press gv you vimgrep after the selected text
+vnoremap <silent> gv :call VisualSearch('gv')<CR>
+"map <leader>g :vimgrep // **/*<left><left><left><left><left><left><left>
+
+
 
 noremap <F5> <Esc>:syntax sync fromstart<CR>
 inoremap <F5> <C-o>:syntax sync fromstart<CR>
