@@ -53,6 +53,8 @@ let g:syntastic_mode_map = { 'passive_filetypes': ['html'] }
 let g:ctrlp_extensions = ['tag', 'buffertag']
 let g:ctrlp_max_files = 0
 
+let g:stardict_split_horizontal = 0
+
 set rtp+=~/.vim/bundle/vundle/
 call vundle#rc()
 
@@ -65,11 +67,11 @@ Bundle 'scrooloose/nerdtree'
 Bundle 'scrooloose/syntastic'
 Bundle 'tpope/vim-fugitive'
 Bundle 'rizzatti/funcoo.vim'
-Bundle 'rizzatti/dash.vim'
 Bundle 'ctrlpvim/ctrlp.vim'
 Bundle 'jeetsukumaran/vim-buffersaurus'
 Bundle 'ElmCast/elm-vim'
 Bundle 'ambv/black'
+Bundle 'phongvcao/vim-stardict'
 
 " non-GitHub repos
 "Bundle 'git://git.wincent.com/command-t.git'
@@ -120,8 +122,7 @@ nnoremap <leader>a :CtrlPBufTagAll<CR>
 nnoremap <leader>c :cn<CR>zO
 
 nnoremap <leader>b :CtrlPBuffer<CR>
-
-nmap <silent> <leader>d <Plug>DashSearch
+nnoremap <leader>d :silent! StarDictCursor<CR>
 
 fun! DetectTemplate()
   let n = 1
