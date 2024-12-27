@@ -32,7 +32,7 @@ def fix_notes(fname):
 
                 # Find the tag with the footnote text.
                 footnotes = section.find_all(string=re.compile(re.escape(substr)), limit=2)
-                if not footnotes:
+                if len(footnotes) != 2:
                     print("Can't find footnote", repr(substr))
                     continue
                 footnote = footnotes[-1]
