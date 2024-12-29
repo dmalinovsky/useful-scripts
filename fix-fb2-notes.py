@@ -7,7 +7,7 @@ import sys
 
 from bs4 import BeautifulSoup
 
-FOOTNOTE_REGEXP = re.compile('\[\d+\]')
+FOOTNOTE_REGEXP = re.compile(r'\[\d+\]')
 ID_PREFIX = 'note'
 note_id = 1
 
@@ -36,6 +36,7 @@ def fix_notes(fname):
                     print("Can't find footnote", repr(substr))
                     continue
                 footnote = footnotes[-1]
+                print('footnote:', footnote)
                 idx = append_footnote(soup, note_body, footnote.parent)
 
                 # Insert link to the new footnote.
