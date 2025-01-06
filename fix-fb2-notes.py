@@ -19,6 +19,7 @@ def fix_notes(fname):
     note_body['name'] = 'notes'
     soup.append(note_body)
 
+    note_cnt = 0
     for section in soup.find_all('section'):
         visited = set()
         for tag in section.find_all(string=FOOTNOTE_REGEXP):
@@ -46,6 +47,7 @@ def fix_notes(fname):
             parent.replace_with(new_tag)
 
     f.close()
+    print('Footnotes processed:', note_cnt)
     return soup
 
 
