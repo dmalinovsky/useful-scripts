@@ -7,7 +7,7 @@ import sys
 
 from bs4 import BeautifulSoup
 
-FOOTNOTE_REGEXP = re.compile(r'\[\d+\]')
+FOOTNOTE_REGEXP = re.compile('\[\d+\]')
 ID_PREFIX = 'note'
 note_id = 1
 
@@ -22,33 +22,47 @@ def fix_notes(fname):
     note_cnt = 0
     for section in soup.find_all('section'):
         visited = set()
-        for tag in section.find_all(string=FOOTNOTE_REGEXP):
-            parent = tag.parent
-            new_text = str(parent)
-            for substr in re.findall(FOOTNOTE_REGEXP, tag.text):
-                if substr in visited:
-                    # Skipping already visited footnote.
-                    continue
-                visited.add(substr)
-
-                # Find the tag with the footnote text.
-                footnotes = section.find_all(string=re.compile(re.escape(substr)), limit=2)
-                if len(footnotes) != 2:
-                    print("Can't find footnote", repr(substr))
-                    continue
-                footnote = footnotes[-1]
-                print('footnote:', footnote)
-                idx = append_footnote(soup, note_body, footnote.parent)
-
-                # Insert link to the new footnote.
-                new_text = new_text.replace(substr,
-                    '<a l:href="#note%d" type="note">%s</a>' % (idx, substr))
-            new_tag = BeautifulSoup(new_text, 'xml')
-            parent.replace_with(new_tag)
+        while True:
+            section_notes = process_section(section, visited, soup, note_body)
+            if section_notes == 0:
+                break
+            note_cnt += section_notes
 
     f.close()
     print('Footnotes processed:', note_cnt)
     return soup
+
+
+def process_section(section, visited, soup, note_body):
+    note_cnt = 0
+    for tag in section.find_all(string=FOOTNOTE_REGEXP):
+        parent = tag.parent
+        new_xml = str(parent)
+        for substr in re.findall(FOOTNOTE_REGEXP, tag.text):
+            if substr in visited:
+                # Skipping already visited footnote.
+                continue
+            visited.add(substr)
+
+            # Find the tag with the footnote text.
+            footnotes = section.find_all(string=re.compile(re.escape(substr)), limit=2)
+            if len(footnotes) != 2:
+                # Can't find footnote.
+                continue
+            footnote = footnotes[-1]
+            idx = append_footnote(soup, note_body, footnote.parent)
+
+            # Insert link to the new footnote.
+            new_xml = new_xml.replace(substr,
+                '<a l:href="#note%d" type="note">%s</a>' % (idx, substr))
+            note_cnt += 1
+        # Repeat again with updated DOM tree.
+        if note_cnt > 0:
+            new_parent = BeautifulSoup(new_xml, 'xml')
+            parent.replace_with(new_parent)
+            break
+
+    return note_cnt
 
 
 def append_footnote(soup, note_body, footnote):
