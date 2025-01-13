@@ -17,7 +17,8 @@ def fix_notes(fname):
     soup = BeautifulSoup(f, 'xml')
     note_body = soup.new_tag('body')
     note_body['name'] = 'notes'
-    soup.append(note_body)
+    fb = soup.find('FictionBook')
+    fb.append(note_body)
 
     note_cnt = 0
     for section in soup.find_all('section'):
