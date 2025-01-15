@@ -7,7 +7,7 @@ import sys
 
 from bs4 import BeautifulSoup
 
-FOOTNOTE_REGEXP = re.compile('\[\d+\]')
+FOOTNOTE_REGEXP = re.compile(r'\[\d+\]')
 ID_PREFIX = 'note'
 note_id = 1
 
