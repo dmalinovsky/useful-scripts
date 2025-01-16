@@ -15,10 +15,7 @@ note_id = 1
 def fix_notes(fname):
     f = open(fname)
     soup = BeautifulSoup(f, 'xml')
-    note_body = soup.new_tag('body')
-    note_body['name'] = 'notes'
-    fb = soup.find('FictionBook')
-    fb.append(note_body)
+    note_body = get_notes_body(soup)
 
     note_cnt = 0
     for section in soup.find_all('section'):
@@ -31,7 +28,7 @@ def fix_notes(fname):
 
     f.close()
     print('Footnotes processed:', note_cnt)
-    return soup
+    return soup, note_cnt
 
 
 def process_section(section, visited, soup, note_body):
@@ -78,12 +75,28 @@ def append_footnote(soup, note_body, footnote):
     return note_id - 1
 
 
+def get_notes_body(soup):
+    note_body = soup.find('body', attrs={'name': 'notes'})
+    if note_body:
+        return note_body
+
+    note_body = soup.new_tag('body')
+    note_body['name'] = 'notes'
+    body = soup.find('body')
+    body.insert_after(note_body)
+
+    return note_body
+
+
 if __name__ == '__main__':
     if len(sys.argv) <= 1:
         print("""Usage: %s fb2_file""" % sys.argv[0])
         sys.exit(1)
 
     input_file = sys.argv[1]
-    soup = fix_notes(input_file)
-    with open(input_file, 'w') as f:
-        f.write(str(soup))
+    soup, note_cnt = fix_notes(input_file)
+    if note_cnt > 0:
+        with open(input_file, 'w') as f:
+            f.write(str(soup))
+    else:
+        print('Nothing to change in the book.')
