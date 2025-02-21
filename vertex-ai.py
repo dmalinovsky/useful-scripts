@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import base64
 import vertexai
@@ -7,14 +7,23 @@ import vertexai.generative_models as generative_models
 
 
 def generate():
-  vertexai.init(project="<replace with a project id>", location="us-central1")
+  vertexai.init(project="<project_id>", location="us-central1")
   model = GenerativeModel(
-    "gemini-1.5-pro-002",
+    "gemini-1.5-pro",
+    system_instruction=[
+        'Вы - переводчик-эксперт.',
+        'Ваша задача - перевести текст с китайского на русский.',
+        'Используйте длинное тире в диалогах.',
+        'Используйте кавычки-ёлочки.',
+        'При необходимости используйте букву "ё".',
+        'Пожалуйста, верните только точный перевод документа.',
+
+    ],
   )
   responses = model.generate_content(
       [text1],
       generation_config=generation_config,
-      safety_settings=safety_settings,
+      safety_settings=None,
   )
 
   print(responses)
@@ -23,34 +32,13 @@ def generate():
       for part in c.content.parts:
         output.write(part.text)
 
-text1 = """You are an expert Translator. You are tasked to translate documents from zh to ru. Use em dashes in dialogs. Use "ё" letter where applicable. Transliterate all names to Russian. Please provide an accurate translation of this document and return translation text only:
+text1 = """
 """
 
 generation_config = {
     "candidate_count": 1,
     "max_output_tokens": 8192,
     "temperature": 0,
-    "top_p": 0.95,
-    "top_k": 1,
 }
-
-safety_settings = [
-    SafetySetting(
-        category=SafetySetting.HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-        threshold=SafetySetting.HarmBlockThreshold.BLOCK_ONLY_HIGH
-    ),
-    SafetySetting(
-        category=SafetySetting.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-        threshold=SafetySetting.HarmBlockThreshold.BLOCK_ONLY_HIGH
-    ),
-    SafetySetting(
-        category=SafetySetting.HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-        threshold=SafetySetting.HarmBlockThreshold.BLOCK_ONLY_HIGH
-    ),
-    SafetySetting(
-        category=SafetySetting.HarmCategory.HARM_CATEGORY_HARASSMENT,
-        threshold=SafetySetting.HarmBlockThreshold.BLOCK_ONLY_HIGH
-    ),
-]
 
 generate()
