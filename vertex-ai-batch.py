@@ -8,8 +8,8 @@ from time import time
 from vertexai.generative_models import GenerativeModel, Part, SafetySetting, FinishReason
 
 
-SEPARATOR = r'(Chapter \(\d+\))'
-#SEPARATOR = r'(第\d+章)'
+#SEPARATOR = r'(Chapter \(\d+\))'
+SEPARATOR = r'(第\d+章)'
 INPUT_ENCODING = 'utf-8'
 OUTPUT = 'result.txt'
 STEP = 500
@@ -24,6 +24,16 @@ def has_repeating_chars(text):
             return True
 
     return False
+
+def is_translated(text):
+    l = len(text)
+    if l < MIN_CHARS:
+        return True
+    # Counts number of UTF symbols with high numbers, it's usually untranslated text.
+    hi_utf = sum(1 for c in text if ord(c) > 10000)
+    if hi_utf > l / 2:
+        return False
+    return True
 
 def generate(model, text, separator):
     start_time = time()
@@ -43,7 +53,7 @@ def generate(model, text, separator):
         output.write("\n" + separator + "\n\n")
         for c in responses.candidates:
             for part in c.content.parts:
-                if has_repeating_chars(part.text):
+                if has_repeating_chars(part.text) or not is_translated(text):
                     return False
                 new_text = part.text.replace("\n\n", "\n")
                 output.write(new_text)
@@ -63,7 +73,7 @@ generation_config = {
 }
 system_instruction = [
         'Вы - переводчик-эксперт.',
-        'Ваша задача - перевести текст с корейского на русский.',
+        'Ваша задача - сделать перевод текста с китайского на русский.',
         'Используйте длинное тире в диалогах.',
         'Используйте кавычки-ёлочки.',
         'При необходимости используйте букву "ё".',
@@ -86,11 +96,11 @@ if __name__ == '__main__':
         output.write('Starting output...\n')
 
     model = GenerativeModel(
-        "gemini-2.0-flash-exp",
+        "gemini-2.0-pro-exp-02-05",
         system_instruction=system_instruction
     )
     fallback_model = GenerativeModel(
-        "gemini-1.5-pro",
+        "gemini-2.0-flash",
         system_instruction=system_instruction
     )
     parts = re.split(SEPARATOR, input_text, flags=re.IGNORECASE)
