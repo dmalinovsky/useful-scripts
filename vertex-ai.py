@@ -1,44 +1,44 @@
 #!/usr/bin/python3
 
 import base64
-import vertexai
-from vertexai.generative_models import GenerativeModel, Part, SafetySetting, FinishReason
-import vertexai.generative_models as generative_models
+from google import genai
+from google.genai import types
 
 
-def generate():
-  vertexai.init(project="<project_id>", location="us-central1")
-  model = GenerativeModel(
-    "gemini-1.5-pro",
-    system_instruction=[
-        'Вы - переводчик-эксперт.',
-        'Ваша задача - перевести текст с китайского на русский.',
-        'Используйте длинное тире в диалогах.',
-        'Используйте кавычки-ёлочки.',
-        'При необходимости используйте букву "ё".',
-        'Пожалуйста, верните только точный перевод документа.',
-
-    ],
-  )
-  responses = model.generate_content(
-      [text1],
-      generation_config=generation_config,
-      safety_settings=None,
-  )
-
-  print(responses)
-  with open("result.txt", "w") as output:
-    for c in responses.candidates:
-      for part in c.content.parts:
-        output.write(part.text)
-
-text1 = """
+text = """
 """
 
-generation_config = {
-    "candidate_count": 1,
-    "max_output_tokens": 8192,
-    "temperature": 0,
-}
+system_instruction=[
+    'Вы - переводчик-эксперт.',
+    'Ваша задача - сделать перевод текста с китайского на русский.',
+    'Используйте длинное тире в диалогах.',
+    'Используйте кавычки-ёлочки.',
+    'При необходимости используйте букву "ё".',
+    'Названия компаний должны быть приведены кириллицей.',
+    'Пожалуйста, верните только точный перевод документа.',
+]
 
-generate()
+client = genai.Client(
+)
+response = client.models.generate_content(
+    model='gemini-2.0-pro-exp-02-05',
+    #model='gemini-1.5-pro-002',
+    contents=text,
+    config=types.GenerateContentConfig(
+        candidate_count=1,
+        max_output_tokens=65535,
+        temperature=0,
+        seed=1313,
+        system_instruction=system_instruction,
+        http_options={'timeout': 120 * 1000}
+    ),
+)
+
+cnd = response.candidates[0]
+
+with open("result.txt", "w") as output:
+    for part in cnd.content.parts:
+        output.write(part.text)
+
+print(response.usage_metadata.model_dump_json(indent=2))
+print(cnd.finish_reason)
