@@ -3,17 +3,19 @@
 import base64
 import re
 import sys
-import vertexai
 from time import time
-from vertexai.generative_models import GenerativeModel, Part, SafetySetting, FinishReason
+from google import genai
+from google.genai import types
 
 
-#SEPARATOR = r'(Chapter \(\d+\))'
-SEPARATOR = r'(第\d+章)'
+SEPARATOR = r'(트레이드된 투수가 재능폭발 \d+화)\n'
+#SEPARATOR = r'(第\d+章.+?)\n'
 INPUT_ENCODING = 'utf-8'
 OUTPUT = 'result.txt'
 STEP = 500
 MIN_CHARS = 20
+RETRIES = 10
+TIMEOUT_COEF = 25
 
 
 def has_repeating_chars(text):
@@ -30,18 +32,41 @@ def is_translated(text):
     if l < MIN_CHARS:
         return True
     # Counts number of UTF symbols with high numbers, it's usually untranslated text.
-    hi_utf = sum(1 for c in text if ord(c) > 10000)
+    hi_utf = sum(1 for c in text if ord(c) > 1500)
     if hi_utf > l / 2:
+        print('Text remained untranslated: %d out of %d' % (hi_utf, l))
         return False
     return True
 
-def generate(model, text, separator):
+def preprocess_text(text):
+    # These repeating symbols result in repetitive output.
+    text = re.sub(r'ㅋ+', 'ㅋ', text)
+    text = re.sub(r'ㄱ+', 'ㄱ', text)
+    text = re.sub(r'ㅑ+', 'ㅑ', text)
+    text = re.sub(r'ㅓ+', 'ㅓ', text)
+    text = re.sub(r'ㅠ+', 'ㅠ', text)
+    text = re.sub(r'ㅅ+', 'ㅅ', text)
+    return re.sub(r'오+', '오', text)
+
+def generate(text, separator):
+    if len(text) < MIN_CHARS:
+        # Skipping too short chapter.
+        return True
+
     start_time = time()
+    #text = preprocess_text(text)
     try:
-        responses = model.generate_content(
-            [text],
-            generation_config=generation_config,
-            safety_settings=None,
+        responses = client.models.generate_content(
+            model='gemini-2.5-pro-exp-03-25',
+            contents=text,
+            config=types.GenerateContentConfig(
+                candidate_count=1,
+                temperature=0,
+                system_instruction=system_instruction,
+                # Allow more processing time for longer text.
+                # The coefficient is empirical value.
+                http_options={'timeout': max(TIMEOUT_COEF * len(text), 30 * 1000)}
+            ),
         )
     except Exception as e:
         print("Can't process input:", e)
@@ -50,14 +75,21 @@ def generate(model, text, separator):
     cnt = 0
 
     with open(OUTPUT, "a") as output:
-        output.write("\n" + separator + "\n\n")
         for c in responses.candidates:
             for part in c.content.parts:
-                if has_repeating_chars(part.text) or not is_translated(text):
+                if has_repeating_chars(part.text) or not is_translated(part.text):
                     return False
-                new_text = part.text.replace("\n\n", "\n")
-                output.write(new_text)
-                cnt += len(new_text)
+                lines = part.text.splitlines()
+                if not lines:
+                    continue
+                # Header.
+                output.write("\n" + lines[0].rstrip('.') + "\n\n")
+                # Body.
+                for line in lines[1:]:
+                    if line.strip() == "":
+                        continue
+                    output.write(line + "\n")
+                    cnt += len(line) + 1
 
     print('Written symbols:', cnt, 'for time:', int(time() - start_time), 'chapter:', separator)
     if cnt == 0:
@@ -66,21 +98,17 @@ def generate(model, text, separator):
         return False
     return True
 
-generation_config = {
-    "candidate_count": 1,
-    "max_output_tokens": 8192,
-    "temperature": 0,
-}
 system_instruction = [
         'Вы - переводчик-эксперт.',
-        'Ваша задача - сделать перевод текста с китайского на русский.',
+        'Ваша задача - сделать перевод текста с корейского на русский.',
         'Используйте длинное тире в диалогах.',
         'Используйте кавычки-ёлочки.',
         'При необходимости используйте букву "ё".',
+        'Имена должны переводиться двумя словами, а не тремя.',
         'Пожалуйста, верните только точный перевод документа.',
 ]
 
-vertexai.init(project="<project_id>", location="us-central1")
+client = genai.Client()
 
 if __name__ == '__main__':
     if len(sys.argv) <= 1:
@@ -95,14 +123,6 @@ if __name__ == '__main__':
     with open(OUTPUT, 'w') as output:
         output.write('Starting output...\n')
 
-    model = GenerativeModel(
-        "gemini-2.0-pro-exp-02-05",
-        system_instruction=system_instruction
-    )
-    fallback_model = GenerativeModel(
-        "gemini-2.0-flash",
-        system_instruction=system_instruction
-    )
     parts = re.split(SEPARATOR, input_text, flags=re.IGNORECASE)
     sep = ''
     for part, next_sep in zip(parts[::2], parts[1::2] + ['']):
@@ -110,9 +130,11 @@ if __name__ == '__main__':
             sep = next_sep
             continue
         print('Processing symbols:', len(part))
-        if not generate(model, part, sep):
-            print('Retrying with the fallback model...')
-            if not generate(fallback_model, part, sep):
+        attempts = 0
+        while not generate(part, sep):
+            attempts += 1
+            print('  Retry attempt #' + str(attempts) + '...')
+            if attempts >= RETRIES:
                 sys.exit(1)
                 print('Failed.')
         sep = next_sep
